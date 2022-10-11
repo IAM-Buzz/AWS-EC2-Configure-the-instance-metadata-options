@@ -1,0 +1,72 @@
+curl http://169.254.169.254/latest/meta-data/instance-id > instance-id.txt
+
+aws s3 ls --region us-east-2
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+To require the use of IMDSv2
+aws ec2 modify-instance-metadata-options --instance-id i-0ab66bec65afe8564 --http-tokens required --http-endpoint enabled --region us-east-2
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+To restore the use of IMDSv1 on an instance using IMDSv2
+aws ec2 modify-instance-metadata-options --instance-id i-09602eaa486784800 --http-tokens optional --http-endpoint enabled --region us-west-1
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+To turn off access to instance metadata
+aws ec2 modify-instance-metadata-options --instance-id i-1234567898abcdef0 --http-endpoint disabled --region us-west-1
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+To turn on access to instance metadata
+aws ec2 modify-instance-metadata-options --instance-id i-09602eaa486784800 --http-endpoint enabled --region us-west-1
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+#!/bin/bash
+INSTANCEID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+echo
+echo "${INSTANCEID}"
+echo
+printf "Enabling IMDSv2"
+echo
+aws ec2 modify-instance-metadata-options --instance-id "$INSTANCEID" --http-tokens required --http-endpoint enabled --region us-west-1
+echo
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+#!/bin/bash
+TOKEN=`curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 300"`
+INSTANCEID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id -H "X-aws-ec2-metadata-token: $TOKEN")
+echo
+echo $INSTANCEID
+echo
+printf "Disable IMDSv2 and Enable IMDSv1"
+echo
+aws ec2 modify-instance-metadata-options --instance-id $INSTANCEID --http-tokens optional --http-endpoint enabled --region us-east-2
+echo
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"`
+
+curl http://169.254.169.254/latest/meta-data/profile -H "X-aws-ec2-metadata-token: $TOKEN"
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+aws ec2 describe-instances --region us-east-2 --instance-id i-0ab66bec65afe8564 --query Reservations[0].Instances[0].MetadataOptions
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
